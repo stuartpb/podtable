@@ -5,6 +5,7 @@
     <title>podtable</title>
   </head>
   <body>
+  <audio id="podcast-audio" preload="none" controls src="http://traffic.libsyn.com/machinecourt/Machine_Court_Ep_004.mp3"></audio>
   <svg id="podcast-animation" viewBox="-105 -105 210 210">
      <defs>
       <clipPath id="ball">
@@ -58,8 +59,9 @@
    </g>
    <circle r="100" fill="url(#shadow2)" stroke="none"/>
   </svg>
-  <audio id="podcast-audio" preload="none" controls src="http://traffic.libsyn.com/machinecourt/Machine_Court_Ep_004.mp3"></audio>
   <script>
+    document.getElementById("podcast-animation").setCurrentTime(0);
+    document.getElementById("podcast-animation").pauseAnimations();
     document.getElementById("podcast-audio").addEventListener("seeking",function(e){
       document.getElementById("podcast-animation").setCurrentTime(e.target.currentTime);
       document.getElementById("podcast-animation").pauseAnimations();
