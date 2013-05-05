@@ -1,0 +1,10 @@
+audio: http://traffic.libsyn.com/machinecourt/Machine_Court_Ep_004.mp3
+background:
+  image: Fiestacat640480.gif
+  width: 640
+  height: 480
+images:
+  - src: papabot_0009_papabot_final-300x300.png
+    start: 0m31s
+    end: 3m03s
+    weight: 1

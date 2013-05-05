@@ -9,10 +9,10 @@
     Press play for WAAAAACKINESS!!
   </div>
   <div>
-    <audio id="podcast-audio" preload="none" controls src="http://traffic.libsyn.com/machinecourt/Machine_Court_Ep_004.mp3"></audio>
+    <audio id="podcast-audio" preload="none" controls></audio>
   </div>
   <div>
-  <svg id="podcast-animation" height="480" width="640" viewBox="0 0 640 480">
+  <svg id="podcast-animation" preserveAspectRatio="xMidYMid slice" viewBox="0 0 640 480">
   <image xlink:href="assets/Fiestacat640480.gif" x="0" y="0" height="480px" width="640px">
   </image>
   <image xlink:href="assets/red_bull_head_2.svg" x="0" y="0" height="150px" width="150px">
@@ -62,23 +62,8 @@
   </image>
   </svg>
   </div>
-  <script>
-    document.getElementById("podcast-animation").setCurrentTime(0);
-    document.getElementById("podcast-animation").pauseAnimations();
-    document.getElementById("podcast-audio").addEventListener("seeking",function(e){
-      document.getElementById("podcast-animation").setCurrentTime(e.target.currentTime);
-      document.getElementById("podcast-animation").pauseAnimations();
-    })
-    document.getElementById("podcast-audio").addEventListener("seeked",function(e){
-      if(!e.target.paused) document.getElementById("podcast-animation").unpauseAnimations();
-      document.getElementById("podcast-animation").setCurrentTime(e.target.currentTime);
-    })
-    document.getElementById("podcast-audio").addEventListener("pause",function(e){
-      document.getElementById("podcast-animation").pauseAnimations();
-    })
-    document.getElementById("podcast-audio").addEventListener("playing",function(e){
-      document.getElementById("podcast-animation").unpauseAnimations();
-    })
-  </script>
+  <script src="js-yaml.min.js"></script>
+  <script src="ms.js"></script>
+  <script src="podtable.js"></script>
   </body>
 </html>
