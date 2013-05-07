@@ -5,6 +5,14 @@ background:
   height: 480
 images:
   - src: papabot_0009_papabot_final-300x300.png
-    start: 0m31s
+    begin: 0m31s
     end: 3m03s
+    weight: 1
+  - src: hermansen_episode_machine_rights_0003_machine_rights_final-300x300.jpg
+    begin: 2m22s
+    end: 5m42s
+    weight: 1
+  - src: hermansen_episode_mystery_meat_0002_mystery_meat_final-300x300.jpg
+    begin: 4m33s
+    end: 7m18s
     weight: 1
