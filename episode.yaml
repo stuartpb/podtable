@@ -3,16 +3,71 @@ background:
   image: Fiestacat640480.gif
   width: 640
   height: 480
+  
 images:
-  - src: papabot_0009_papabot_final-300x300.png
-    begin: 0m31s
-    end: 3m03s
+
+- src: papabot_0009_papabot_final-300x300.png
+  begin: 0:31
+  end:   3:03
+  weight: 1
+  
+- src: hermansen_episode_machine_rights_0003_machine_rights_final-300x300.jpg
+  begin: 2m22s
+  end:   5 minutes 42 seconds
+  weight: 1
+  
+- src: hermansen_episode_mystery_meat_0002_mystery_meat_final-300x300.jpg
+  begin: 4m33s
+  end:   07:18
+  weight: 1
+  
+- src: fear_the_future_01_0002_final-300x300.jpg
+  begin: 3m
+  end:   9m
+  weight: 1
+  
+- src: Anonymous_Chocolate_waffle.svg
+  begin: 0
+  end:   2m
+  weight: 1
+  
+- src: red_bull_head_2.svg
+  sequences:
+  - begin: 15m
+    end:   40m
     weight: 1
-  - src: hermansen_episode_machine_rights_0003_machine_rights_final-300x300.jpg
-    begin: 2m22s
-    end: 5m42s
-    weight: 1
-  - src: hermansen_episode_mystery_meat_0002_mystery_meat_final-300x300.jpg
-    begin: 4m33s
-    end: 7m18s
-    weight: 1
+  - end: 
+  
+- src: Andy_Tools_Hammer_Spanner.svg
+  begin: 96
+  end:   30.25 minutes
+  weight: 1
+  
+- src: squeaky.svg
+  begin: 98121ms
+  end:   .3 hours
+  weight: 1
+  
+- src: steamplatform.svg
+  begin: 4m33s
+  end:   7m18s
+  weight: 1
+  
+- src: Yellow-and-orange-butterfly.svg
+  begin: 4m33s
+  end:   7m18s
+  weight: 1
+  
+textblocks: # not implemented
+
+- content: Example!
+  begin: 1:23
+  end:   4:56
+  weight: 1
+  
+- content: |
+    This is an example
+    of multiline text.
+  begin: 1:23
+  end:   4:56
+  weight: 1

@@ -1,4 +1,5 @@
-//polyfill XHR
+// Simple polyfills ///////////////////
+//// XHR
 window.XMLHttpRequest = window.XMLHttpRequest || function () {
     /*global ActiveXObject*/
     try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); } catch (e1) { }
@@ -6,6 +7,17 @@ window.XMLHttpRequest = window.XMLHttpRequest || function () {
     try { return new ActiveXObject("Msxml2.XMLHTTP"); } catch (e3) { }
     throw new Error("This browser does not support XMLHttpRequest.");
 };
+
+//// Object.keys
+if (!Object.keys) Object.keys = function(o) {
+  if (o !== Object(o))
+    throw new TypeError('Object.keys called on a non-object');
+  var k=[],p;
+  for (p in o) if (Object.prototype.hasOwnProperty.call(o,p)) k.push(p);
+  return k;
+};
+
+// Functions //////////////////////////
 
 //write function for defining asset URLs
 //note: function is for convenience, not sandboxing (no '..' rejection)
@@ -17,7 +29,7 @@ function asset(url){
 //Get a YAML document via XHR
 function getYAML(url,callback) {
   /*global jsyaml*/
-  var req = XMLHttpRequest();
+  var req = new XMLHttpRequest();
   req.open('GET',url,true);
   req.onreadystatechange = function () {
     if (req.readyState == 4)
@@ -31,15 +43,57 @@ function getYAML(url,callback) {
 }
 
 function svgElem(tag){
-  return document.createElementNS(tag,"http://www.w3.org/2000/svg");
+  return document.createElementNS("http://www.w3.org/2000/svg",tag);
 }
 
-function svgTime(time){
-  /*global ms*/
-  if(typeof time == 'string'){
-    return ms(ms(time));
-  } else return ms(time);
-}
+var parseTime; (function(){
+  var timeScale = [
+    {names: ['s', 'seconds','second'], factor: 1},
+    {names: ['min', 'minutes', 'minute', 'm'], factor: 60},
+    {names: ['h','hours','hour'], factor: 60},
+    {names: ['d','days','day'], factor: 24},
+    {names: ['y', 'years', 'year'], factor: 365.25}];
+    
+  var metrics = {ms: 1/1000};
+  
+  for (var i = 0; i < timeScale.length; i++) {
+    var time = 1;
+    for (var j = 0; j <= i; j++){
+      time *= timeScale[j].factor;
+    }
+    metrics[i+1] = time;
+    for (j = 0; j < timeScale[i].names.length; j++) {
+      metrics[timeScale[i].names[j]] = time;
+    }
+  }
+  
+  var pattern = '(\\d*\\.?\\d+)\\s*(' + Object.keys(metrics).join('|') + ')';
+    
+  parseTime = function (str) {
+    var milliseconds = 0;
+    var segments ;
+    if(typeof str == 'string') str.split(':');
+    if(segments && segments.length > 1) {
+      for (var i = 0; i < segments.length; i++)
+        milliseconds += parseFloat(segments[i]) * metrics[segments.length-i];
+    } else {
+      var regex = new RegExp(pattern,'ig');
+      
+      var match = regex.exec(str);
+      if(match){
+        while(match) {
+          milliseconds += parseFloat(match[1]) * metrics[match[2].toLowerCase()];
+          match = regex.exec(str);
+        }
+      } else {
+        milliseconds = parseFloat(str);
+      }
+    }
+    return milliseconds;
+  };
+})();
+
+
 
 //TODO: Make this constant from run to run
 function randomBool(){
@@ -55,15 +109,17 @@ function randomStartEnd(edges){
   var crossAxis = +randomBool(); var otherAxis = +!crossAxis;
   var startEdge = +randomBool(); var endEdge = +!startEdge;
   
+  console.log(crossAxis);
+  console.log(startEdge);
   //Set edges for the edge-to-edge axis
-  coords[otherAxis][startEdge] = edges[otherAxis][startEdge];
-  coords[otherAxis][endEdge] = edges[otherAxis][endEdge];
+  coords[0][otherAxis] = edges[otherAxis][startEdge];
+  coords[1][otherAxis] = edges[otherAxis][endEdge];
   
   //Set start and opposite end for the intermediate axis
-  var startCoord = randomVal(coords[crossAxis][startEdge],
-    coords[crossAxis][endEdge]);
-  coords[crossAxis][startEdge] = startCoord;
-  coords[crossAxis][endEdge] = coords[crossAxis][endEdge] - startCoord;
+  var startCoord = randomVal(edges[crossAxis][startEdge],
+    edges[crossAxis][endEdge]);
+  coords[0][crossAxis] = startCoord;
+  coords[1][crossAxis] = edges[crossAxis][endEdge] - startCoord;
   return coords;
 }
 
@@ -98,7 +154,8 @@ getYAML('episode.yaml',function(episode){
     stageW = episode.background.width;
     stageH = episode.background.height;
     var bg = svgElem('image');
-    bg.href = asset(episode.background.image);
+    bg.setAttributeNS('http://www.w3.org/1999/xlink','href',
+      asset(episode.background.image));
     bg.setAttribute('width',stageW);
     bg.setAttribute('height',stageH);
     stage.appendChild(bg);
@@ -108,16 +165,19 @@ getYAML('episode.yaml',function(episode){
   
   var baseSize = Math.min(stageW, stageH) / 3;
   
-  var edges = [[-baseSize,stageW+baseSize],[-baseSize,stageH+baseSize]];
-  
-  for(var i = 0; i < episode.images; i++) {
+  var edges = [[0,stageW+baseSize*2],[0,stageH+baseSize*2]];
+  for(var i = 0; i < episode.images.length; i++) {
     var epImage = episode.images[i];
     var image = svgElem('image');
     image.setAttribute('width',baseSize);
     image.setAttribute('height',baseSize);
+    image.setAttribute('x',-baseSize);
+    image.setAttribute('y',-baseSize);
+    image.setAttributeNS('http://www.w3.org/1999/xlink','href',
+      asset(epImage.src));
     var anim = svgElem('animateMotion');
-    anim.setAttribute('begin', svgTime(epImage.begin));
-    anim.setAttribute('end', svgTime(epImage.end));
+    anim.setAttribute('begin', parseTime(epImage.begin));
+    anim.setAttribute('dur', parseTime(epImage.end) - parseTime(epImage.begin));
     var rseCoords = randomStartEnd(edges);
     anim.setAttribute('from', rseCoords[0].join());
     anim.setAttribute('to', rseCoords[1].join());
