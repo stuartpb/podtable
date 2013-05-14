@@ -11,14 +11,30 @@ backdrops:
     image: isometricbg.svg
     origin: [250,440]
     perspective: 2/3
-    resolution: 100
+    resolution: 10
 
 sets:
   testzed:
     backdrop: Molochwall
     props:
     - actor: mousey
-      position: [20,0,15]
+      position: [1,0,25]
+    - actor: mousey
+      position: [1,0,1]
+    - actor: mousey
+      position: [1,0,10]
+    - actor: mousey
+      position: [10,0,25]
+    - actor: mousey
+      position: [10,0,1]
+    - actor: mousey
+      position: [10,0,10]
+    - actor: mousey
+      position: [25,0,25]
+    - actor: mousey
+      position: [25,0,1]
+    - actor: mousey
+      position: [25,0,10]
 
   Molochobar:
     backdrop: Molochwall

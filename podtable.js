@@ -165,8 +165,8 @@ queue()
       
       image.setAttribute('width',actor.width);
       image.setAttribute('height',actor.height);
-      image.setAttribute('x',xOrigin + resolution * cos * prop.position[0]);
-      image.setAttribute('y',(yOrigin + resolution * (sin * prop.position[2] + prop.position[1]))-stageH);
+      image.setAttribute('x',xOrigin + resolution * (prop.position[0] - cos * prop.position[2]));
+      image.setAttribute('y',stageH - (yOrigin + resolution * (prop.position[1] - sin * prop.position[2])));
       
       //Not currently being handled: reordering the elements by Z order
 
