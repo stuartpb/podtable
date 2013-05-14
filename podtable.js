@@ -93,6 +93,12 @@ var parseTime; (function(){
   };
 })();
 
+function fractional(str) {
+  var matches = /(-?\d+\.?\d*)\/(\d+\.?\d*)/.exec(str);
+  if (matches) return parseFloat(matches[1]) / parseFloat(matches[2]);
+  else return parseFloat(str);
+}
+
 var stage = document.getElementById("stage");
 //Start paused
 stage.setCurrentTime(0);
@@ -139,8 +145,8 @@ queue()
       stageH = backdrop.height || 1080;
       xOrigin = (backdrop.origin && backdrop.origin[0]) || 0;
       yOrigin = (backdrop.origin && backdrop.origin[1]) || 0;
-      //eval is evil but I don't have a mixed fractions parser handy right now
-      angle = (Math.PI / 2) * eval(backdrop.perspective);
+      
+      angle = (Math.PI / 2) * fractional(backdrop.perspective);
       cos = Math.cos(angle); sin = Math.sin(angle);
       resolution = backdrop.resolution || 1;
       console.log(resolution)
