@@ -34,9 +34,9 @@ function getYAML(url,callback) {
   req.onreadystatechange = function () {
     if (req.readyState == 4)
       if(req.status == 200 || req.status == 304) {
-        callback(jsyaml.load(req.responseText));
+        callback(null,jsyaml.load(req.responseText));
       } else {
-        throw new Error('Unexpected HTTP status ' + req.status);
+        callback(new Error('Unexpected HTTP status ' + req.status));
       }
   };
   req.send();
@@ -93,95 +93,83 @@ var parseTime; (function(){
   };
 })();
 
-
-
-//TODO: Make this constant from run to run
-function randomBool(){
-  return Math.random() > 0.5;
-}
-function randomVal(low,high){
-  return Math.random() * (high-low) + low;
-}
-
-function randomStartEnd(edges){
-  var coords = [[],[]];
-  //Choose random axis and direction
-  var crossAxis = +randomBool(); var otherAxis = +!crossAxis;
-  var startEdge = +randomBool(); var endEdge = +!startEdge;
-  
-  console.log(crossAxis);
-  console.log(startEdge);
-  //Set edges for the edge-to-edge axis
-  coords[0][otherAxis] = edges[otherAxis][startEdge];
-  coords[1][otherAxis] = edges[otherAxis][endEdge];
-  
-  //Set start and opposite end for the intermediate axis
-  var startCoord = randomVal(edges[crossAxis][startEdge],
-    edges[crossAxis][endEdge]);
-  coords[0][crossAxis] = startCoord;
-  coords[1][crossAxis] = edges[crossAxis][endEdge] - startCoord;
-  return coords;
-}
-
+var stage = document.getElementById("stage");
 //Start paused
-document.getElementById("podcast-animation").setCurrentTime(0);
-document.getElementById("podcast-animation").pauseAnimations();
+stage.setCurrentTime(0);
+stage.pauseAnimations();
 
 //Hook up SVG animation to audio playback
 document.getElementById("podcast-audio").addEventListener("seeking",function(e){
-  document.getElementById("podcast-animation").setCurrentTime(e.target.currentTime);
-  document.getElementById("podcast-animation").pauseAnimations();
+  stage.setCurrentTime(e.target.currentTime);
+  stage.pauseAnimations();
 });
 document.getElementById("podcast-audio").addEventListener("seeked",function(e){
-  if(!e.target.paused) document.getElementById("podcast-animation").unpauseAnimations();
-  document.getElementById("podcast-animation").setCurrentTime(e.target.currentTime);
+  if(!e.target.paused) document.getElementById("stage").unpauseAnimations();
+  stage.setCurrentTime(e.target.currentTime);
 });
 document.getElementById("podcast-audio").addEventListener("pause",function(e){
-  document.getElementById("podcast-animation").pauseAnimations();
+  stage.pauseAnimations();
 });
 document.getElementById("podcast-audio").addEventListener("playing",function(e){
-  document.getElementById("podcast-animation").unpauseAnimations();
+  stage.unpauseAnimations();
 });
+   
+/*global queue*/
+   
+//Parse setting + episode definition
+queue()
+  .defer(getYAML,'setting.yaml')
+  .defer(getYAML,'episode.yaml')
+  .await(function(err,setting,episode) {
+    //todo: handle multiple sources
+    document.getElementById("podcast-audio").src = asset(episode.audio);
     
-//Parse episode definition
-getYAML('episode.yaml',function(episode){
-  //todo: handle multiple sources
-  document.getElementById("podcast-audio").src = asset(episode.audio);
-  
-  var stage = document.getElementById("podcast-animation");
-  var stageW, stageH;
-  if(episode.background){
-    stageW = episode.background.width;
-    stageH = episode.background.height;
-    var bg = svgElem('image');
-    bg.setAttributeNS('http://www.w3.org/1999/xlink','href',
-      asset(episode.background.image));
-    bg.setAttribute('width',stageW);
-    bg.setAttribute('height',stageH);
-    stage.appendChild(bg);
-  } else {
-    stageW = 640; stageH = 480;
-  }
-  
-  var baseSize = Math.min(stageW, stageH) / 3;
-  
-  var edges = [[0,stageW+baseSize*2],[0,stageH+baseSize*2]];
-  for(var i = 0; i < episode.images.length; i++) {
-    var epImage = episode.images[i];
-    var image = svgElem('image');
-    image.setAttribute('width',baseSize);
-    image.setAttribute('height',baseSize);
-    image.setAttribute('x',-baseSize);
-    image.setAttribute('y',-baseSize);
-    image.setAttributeNS('http://www.w3.org/1999/xlink','href',
-      asset(epImage.src));
-    var anim = svgElem('animateMotion');
-    anim.setAttribute('begin', parseTime(epImage.begin));
-    anim.setAttribute('dur', parseTime(epImage.end) - parseTime(epImage.begin));
-    var rseCoords = randomStartEnd(edges);
-    anim.setAttribute('from', rseCoords[0].join());
-    anim.setAttribute('to', rseCoords[1].join());
-    image.appendChild(anim);
-    stage.appendChild(image);
-  }
-});
+    //Only supporting one scene for now
+    var scene = episode.scenes[0];
+    var set = setting.sets[scene.set];
+    var stageW, stageH;
+    var xOrigin, yOrigin;
+    var angle, cos, sin;
+    var resolution;
+    
+    if(set.backdrop){
+      var backdrop = setting.backdrops[set.backdrop];
+      
+      stageW = backdrop.width || 1920;
+      stageH = backdrop.height || 1080;
+      xOrigin = (backdrop.origin && backdrop.origin[0]) || 0;
+      yOrigin = (backdrop.origin && backdrop.origin[1]) || 0;
+      //eval is evil but I don't have a mixed fractions parser handy right now
+      angle = (Math.PI / 2) * eval(backdrop.perspective);
+      cos = Math.cos(angle); sin = Math.sin(angle);
+      resolution = backdrop.resolution || 1;
+      console.log(resolution)
+      
+      var bg = svgElem('image');
+      bg.setAttributeNS('http://www.w3.org/1999/xlink','href',
+        asset(backdrop.image));
+      bg.setAttribute('width',stageW);
+      bg.setAttribute('height',stageH);
+      stage.appendChild(bg);
+      
+    } else {
+      stageW = 1920; stageH = 1080;
+    }
+    
+    for(var i = 0; i < set.props.length; i++) {
+      var prop = set.props[i];
+      var actor = setting.actors[prop.actor];
+      var image = svgElem('image');
+      
+      image.setAttributeNS('http://www.w3.org/1999/xlink','href', asset(actor.src));
+      
+      image.setAttribute('width',actor.width);
+      image.setAttribute('height',actor.height);
+      image.setAttribute('x',xOrigin + resolution * cos * prop.position[0]);
+      image.setAttribute('y',stageH - (yOrigin + resolution * (sin * prop.position[2] + prop.position[1])));
+      
+      //Not currently being handled: reordering the elements by Z order
+
+      stage.appendChild(image);
+    }
+  });

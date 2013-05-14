@@ -1,0 +1,27 @@
+actors:
+  mousey:
+    src: mouse.svg
+    width: 70
+    height: 50
+  Conveniently Open Door:
+    origin: [0,0]
+
+backdrops:
+  Molochwall:
+    image: isometricbg.svg
+    origin: [250,440]
+    perspective: 2/3
+    resolution: 100
+
+sets:
+  testzed:
+    backdrop: Molochwall
+    props:
+    - actor: mousey
+      position: [20,0,15]
+
+  Molochobar:
+    backdrop: Molochwall
+    props:
+    - actor: Conveniently Open Door
+      position: [0,0,15]
